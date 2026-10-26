@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Job Search Campaign & Pipeline Forecaster</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b0f17;
+      --surface: #111827;
+      --surface-elevated: #162032;
+      --surface-hover: #1e293b;
+      --border: #1f293d;
+      --border-subtle: #192338;
+      
+      --text: #f3f4f6;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      
+      --brand: #0284c7;
+      --brand-glow: rgba(2, 132, 199, 0.25);
+      --brand-light: #38bdf8;
+      
+      --emerald: #10b981;
+      --emerald-glow: rgba(16, 185, 129, 0.18);
+      --amber: #f59e0b;
+      --amber-glow: rgba(245, 158, 11, 0.18);
+      --rose: #f43f5e;
+      --rose-glow: rgba(244, 63, 94, 0.18);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+      padding: 32px 20px;
+      display: flex;
+      justify-content: center;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container {
+      max-width: 1120px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    header {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 22px 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+    }
+
+    .brand-wrap {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-icon {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, var(--brand), #0369a1);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: 800;
+      font-size: 1.1rem;
+      box-shadow: 0 0 16px var(--brand-glow);
+    }
+
+    .header-text h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #ffffff;
+    }
+
+    .header-text p {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-top: 3px;
+    }
+
+    .status-pill {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      padding: 6px 12px;
+      border-radius: 9999px;
+      background: rgba(2, 132, 199, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      color: var(--brand-light);
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--brand-light);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.9); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    .kpi-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .kpi-card:hover {
+      border-color: #2b3a55;
+    }
+
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: transparent;
+    }
+
+    .kpi-card.accent-brand::before { background: var(--brand-light); }
+    .kpi-card.accent-emerald::before { background: var(--emerald); }
+    .kpi-card.accent-amber::before { background: var(--amber); }
+
+    .kpi-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .kpi-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: -0.03em;
+    }
+
+    .kpi-subtext {
+      font-size: 0.76rem;
+      font-weight: 500;
+      color: var(--text-dim);
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 390px 1fr;
+      gap: 20px;
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 22px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .panel-title {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .control-block {
+      margin-bottom: 18px;
+    }
+
+    .control-label-wrap {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-bottom: 7px;
+      color: #e2e8f0;
+    }
+
+    .control-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      color: var(--brand-light);
+      font-weight: 600;
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 6px;
+      border-radius: 9999px;
+      background: #1e293b;
+      outline: none;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #f8fafc;
+      border: 2px solid var(--brand);
+      box-shadow: 0 0 10px var(--brand-glow);
+      cursor: pointer;
+      transition: transform 0.15s ease, background-color 0.15s ease;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+      background: var(--brand-light);
+    }
+
+    .control-hint {
+      font-size: 0.72rem;
+      color: var(--text-dim);
+      margin-top: 5px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: 0.82rem;
+    }
+
+    thead th {
+      text-align: left;
+      padding: 10px 10px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-dim);
+      border-bottom: 1px solid var(--border);
+    }
+
+    tbody td {
+      padding: 10px 10px;
+      border-bottom: 1px solid var(--border-subtle);
+      color: #cbd5e1;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    tbody tr:hover td {
+      background: var(--surface-hover);
+    }
+
+    .table-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .badge-lag {
+      background: rgba(148, 163, 184, 0.08);
+      color: var(--text-muted);
+      border: 1px solid rgba(148, 163, 184, 0.15);
+    }
+
+    .badge-matured {
+      background: var(--emerald-glow);
+      color: var(--emerald);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .strategy-card {
+      background: var(--surface-elevated);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transition: all 0.2s ease;
+    }
+
+    .strategy-card.selected {
+      border-color: var(--brand-light);
+      background: rgba(2, 132, 199, 0.06);
+      box-shadow: 0 0 24px rgba(2, 132, 199, 0.12);
+    }
+
+    .strategy-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .strategy-name {
+      font-size: 0.86rem;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .strategy-tag {
+      font-size: 0.68rem;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .tag-passive { background: rgba(148, 163, 184, 0.1); color: var(--text-muted); }
+    .tag-active { background: var(--brand-glow); color: var(--brand-light); }
+    .tag-sprint { background: var(--emerald-glow); color: var(--emerald); }
+
+    .strategy-metrics {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 0.8rem;
+    }
+
+    .stat-line {
+      display: flex;
+      justify-content: space-between;
+      color: var(--text-muted);
+    }
+
+    .stat-line span:last-child {
+      color: #f1f5f9;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+    }
+
+    .strategy-result {
+      margin-top: 4px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.78rem;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <div class="brand-wrap">
+      <div class="brand-icon">CF</div>
+      <div class="header-text">
+        <h1>Job Search Funnel & Callback Forecaster</h1>
+        <p>Dynamic pipeline sensitivity model &bull; 8-week structured sprint</p>
+      </div>
+    </div>
+    <div class="status-pill">
+      <span class="status-dot"></span>
+      <span>MODEL ENGINE ACTIVE</span>
+    </div>
+  </header>
+
+  <div class="kpi-row">
+    <div class="kpi-card accent-brand">
+      <span class="kpi-label">Session Daily Load</span>
+      <span class="kpi-value" id="kpi-load-time">0.0h</span>
+      <span class="kpi-subtext" id="kpi-load-status">Sustainable block</span>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-label">Total Submissions</span>
+      <span class="kpi-value" id="kpi-portal-apps">0</span>
+      <span class="kpi-subtext" id="kpi-portal-sub">Fresh + prior baseline</span>
+    </div>
+    <div class="kpi-card accent-emerald">
+      <span class="kpi-label">Calls by Week 8 (In-Window)</span>
+      <span class="kpi-value" id="kpi-in-window-calls">0.0</span>
+      <span class="kpi-subtext" id="kpi-status-badge">Target: &ge; 4.0 calls</span>
+    </div>
+    <div class="kpi-card accent-amber">
+      <span class="kpi-label">Total Pipeline Maturity</span>
+      <span class="kpi-value" id="kpi-total-calls">0.0</span>
+      <span class="kpi-subtext">Extended through W11 lag</span>
+    </div>
+  </div>
+
+  <div class="main-grid">
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Funnel Levers & Constants</span>
+        <span style="font-size: 0.72rem; color: var(--text-dim); text-transform: uppercase;">Adjustable</span>
+      </div>
+
+      <div class="control-block">
+        <div class="control-label-wrap">
+          <span>Weekly Portal Apps (Tue/Wed)</span>
+          <span class="control-val" id="val-apps">10</span>
+        </div>
+        <input type="range" id="slider-apps" min="4" max="20" step="1" value="10">
+        <div class="control-hint">Per application day: <strong id="hint-apps-day" style="color: #cbd5e1;">5.0</strong> submissions</div>
+      </div>
+
+      <div class="control-block">
+        <div class="control-label-wrap">
+          <span>Tailoring Time per App</span>
+          <span class="control-val" id="val-time">45 min</span>
+        </div>
+        <input type="range" id="slider-time" min="20" max="75" step="5" value="45">
+        <div class="control-hint">ATS keyword integration & cover tailoring effort</div>
+      </div>
+
+      <div class="control-block">
+        <div class="control-label-wrap">
+          <span>Weekly Recruiter Outreach (Thu)</span>
+          <span class="control-val" id="val-touch">5</span>
+        </div>
+        <input type="range" id="slider-touch" min="0" max="15" step="1" value="5">
+        <div class="control-hint">Targeted hiring manager & recruiter reachouts</div>
+      </div>
+
+      <div class="control-block">
+        <div class="control-label-wrap">
+          <span>Portal Conversion Tier</span>
+          <span class="control-val" id="val-portal-rate">4.5%</span>
+        </div>
+        <input type="range" id="slider-portal-rate" min="1.0" max="8.0" step="0.5" value="4.5">
+        <div class="control-hint">Impact of &lt;72hr timing + keyword alignment tier</div>
+      </div>
+
+      <div class="control-block">
+        <div class="control-label-wrap">
+          <span>Outreach Conversion Rate</span>
+          <span class="control-val" id="val-touch-rate">12.0%</span>
+        </div>
+        <input type="range" id="slider-touch-rate" min="2.0" max="20.0" step="1.0" value="12.0">
+        <div class="control-hint">Direct recruiter screen scheduling rate</div>
+      </div>
+
+      <div class="control-block">
+        <div class="control-label-wrap">
+          <span>Response Lag (Latency)</span>
+          <span class="control-val" id="val-lag">3 Wks</span>
+        </div>
+        <input type="range" id="slider-lag" min="2" max="4" step="1" value="3">
+        <div class="control-hint">Turnaround time from application to screen invitation</div>
+      </div>
+
+      <div class="control-block" style="margin-bottom: 0;">
+        <div class="control-label-wrap">
+          <span>Prior Submissions (Cold Baseline)</span>
+          <span class="control-val" id="val-prior">15</span>
+        </div>
+        <input type="range" id="slider-prior" min="0" max="30" step="5" value="15">
+        <div class="control-hint">Maturing baseline from prior submissions</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Weekly Maturation Timeline</span>
+        <span style="font-size: 0.72rem; color: var(--text-dim); font-family: 'JetBrains Mono', monospace;">8-WEEK PROJECTION</span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Wk</th>
+            <th>New Apps</th>
+            <th>Touches</th>
+            <th>Cumulative Apps</th>
+            <th>Weekly Maturation</th>
+            <th style="text-align: right;">Cumulative Calls</th>
+          </tr>
+        </thead>
+        <tbody id="timeline-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <span class="panel-title">Strategy Comparison Matrix</span>
+      <span style="font-size: 0.72rem; color: var(--text-dim);">SIDE-BY-SIDE OUTCOMES</span>
+    </div>
+    <div class="comparison-grid">
+      <div class="strategy-card">
+        <div class="strategy-card-header">
+          <span class="strategy-name">Aggregator Heavy</span>
+          <span class="strategy-tag tag-passive">Passive Volume</span>
+        </div>
+        <div class="strategy-metrics">
+          <div class="stat-line"><span>Total Submissions:</span> <span>120</span></div>
+          <div class="stat-line"><span>Outreach Volume:</span> <span>0</span></div>
+          <div class="stat-line"><span>Est. Daily Load:</span> <span>2.5 hrs/day</span></div>
+          <div class="stat-line"><span>Effective Conversion:</span> <span>2.0%</span></div>
+        </div>
+        <div class="strategy-result">
+          <span style="color: var(--text-muted);">Calls by Wk 8:</span>
+          <span style="color: var(--rose); font-weight: 700; font-family: 'JetBrains Mono';">1.5 (Missed)</span>
+        </div>
+      </div>
+
+      <div class="strategy-card selected">
+        <div class="strategy-card-header">
+          <span class="strategy-name">Your Dynamic Model</span>
+          <span class="strategy-tag tag-active">Active Plan</span>
+        </div>
+        <div class="strategy-metrics">
+          <div class="stat-line"><span>Total Submissions:</span> <span id="comp-curr-apps">95</span></div>
+          <div class="stat-line"><span>Outreach Volume:</span> <span id="comp-curr-touch">40</span></div>
+          <div class="stat-line"><span>Est. Daily Load:</span> <span id="comp-curr-load">3.8 hrs/day</span></div>
+          <div class="stat-line"><span>Full Maturity Calls:</span> <span id="comp-curr-rate">-</span></div>
+        </div>
+        <div class="strategy-result">
+          <span style="color: var(--text-muted);">Calls by Wk 8:</span>
+          <span id="comp-curr-w8" style="font-weight: 700; font-family: 'JetBrains Mono'; color: var(--brand-light);">-</span>
+        </div>
+      </div>
+
+      <div class="strategy-card">
+        <div class="strategy-card-header">
+          <span class="strategy-name">Outreach Maximizer</span>
+          <span class="strategy-tag tag-sprint">Warm Sourced</span>
+        </div>
+        <div class="strategy-metrics">
+          <div class="stat-line"><span>Total Submissions:</span> <span>80</span></div>
+          <div class="stat-line"><span>Outreach Volume:</span> <span>64</span></div>
+          <div class="stat-line"><span>Est. Daily Load:</span> <span>3.0 hrs/day</span></div>
+          <div class="stat-line"><span>Effective Conversion:</span> <span>6.5%</span></div>
+        </div>
+        <div class="strategy-result">
+          <span style="color: var(--text-muted);">Calls by Wk 8:</span>
+          <span style="color: var(--emerald); font-weight: 700; font-family: 'JetBrains Mono';">5.1 (Exceeded)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const sliderPrior = document.getElementById('slider-prior');
+  const sliderApps = document.getElementById('slider-apps');
+  const sliderTime = document.getElementById('slider-time');
+  const sliderTouch = document.getElementById('slider-touch');
+  const sliderPortalRate = document.getElementById('slider-portal-rate');
+  const sliderTouchRate = document.getElementById('slider-touch-rate');
+  const sliderLag = document.getElementById('slider-lag');
+
+  const valPrior = document.getElementById('val-prior');
+  const valApps = document.getElementById('val-apps');
+  const hintAppsDay = document.getElementById('hint-apps-day');
+  const valTime = document.getElementById('val-time');
+  const valTouch = document.getElementById('val-touch');
+  const valPortalRate = document.getElementById('val-portal-rate');
+  const valTouchRate = document.getElementById('val-touch-rate');
+  const valLag = document.getElementById('val-lag');
+
+  const kpiLoadTime = document.getElementById('kpi-load-time');
+  const kpiLoadStatus = document.getElementById('kpi-load-status');
+  const kpiPortalApps = document.getElementById('kpi-portal-apps');
+  const kpiPortalSub = document.getElementById('kpi-portal-sub');
+  const kpiInWindowCalls = document.getElementById('kpi-in-window-calls');
+  const kpiStatusBadge = document.getElementById('kpi-status-badge');
+  const kpiTotalCalls = document.getElementById('kpi-total-calls');
+
+  const compCurrApps = document.getElementById('comp-curr-apps');
+  const compCurrTouch = document.getElementById('comp-curr-touch');
+  const compCurrLoad = document.getElementById('comp-curr-load');
+  const compCurrRate = document.getElementById('comp-curr-rate');
+  const compCurrW8 = document.getElementById('comp-curr-w8');
+
+  const timelineBody = document.getElementById('timeline-body');
+
+  function calculate() {
+    const priorApps = parseInt(sliderPrior.value);
+    const weeklyApps = parseInt(sliderApps.value);
+    const timePerApp = parseInt(sliderTime.value);
+    const weeklyTouch = parseInt(sliderTouch.value);
+    const portalRate = parseFloat(sliderPortalRate.value) / 100;
+    const touchRate = parseFloat(sliderTouchRate.value) / 100;
+    const lagWeeks = parseInt(sliderLag.value);
+
+    valPrior.textContent = priorApps;
+    valApps.textContent = weeklyApps;
+    hintAppsDay.textContent = (weeklyApps / 2).toFixed(1);
+    valTime.textContent = timePerApp + ' min';
+    valTouch.textContent = weeklyTouch;
+    valPortalRate.textContent = sliderPortalRate.value + '%';
+    valTouchRate.textContent = sliderTouchRate.value + '%';
+    valLag.textContent = lagWeeks + ' Wks';
+
+    const dailyAppHours = ((weeklyApps / 2) * timePerApp) / 60;
+    kpiLoadTime.textContent = dailyAppHours.toFixed(1) + 'h';
+    if (dailyAppHours > 4.0) {
+      kpiLoadStatus.textContent = 'High fatigue risk';
+      kpiLoadStatus.style.color = 'var(--rose)';
+    } else if (dailyAppHours >= 3.0) {
+      kpiLoadStatus.textContent = 'Intensive block';
+      kpiLoadStatus.style.color = 'var(--amber)';
+    } else {
+      kpiLoadStatus.textContent = 'Sustainable block';
+      kpiLoadStatus.style.color = 'var(--emerald)';
+    }
+
+    const campaignApps = weeklyApps * 8;
+    const totalSubmissions = priorApps + campaignApps;
+    const totalTouches = weeklyTouch * 8;
+
+    kpiPortalApps.textContent = totalSubmissions;
+    kpiPortalSub.textContent = `${campaignApps} new + ${priorApps} baseline`;
+
+    const priorYield = priorApps * 0.02;
+
+    let cumulativeCalls = 0;
+    let callsAtWeek8 = 0;
+    let tableHtml = '';
+
+    for (let w = 1; w <= 8; w++) {
+      const matureWeek = w - lagWeeks;
+      let newCalls = 0;
+
+      if (w <= 2 && priorApps > 0) {
+        newCalls += priorYield / 2;
+      }
+
+      if (matureWeek >= 1) {
+        newCalls += (weeklyApps * portalRate) + (weeklyTouch * touchRate);
+      }
+
+      cumulativeCalls += newCalls;
+      if (w === 8) {
+        callsAtWeek8 = cumulativeCalls;
+      }
+
+      const statusBadge = (matureWeek < 1 && newCalls === 0)
+        ? `<span class="badge badge-lag">Lag Phase</span>` 
+        : `<span class="badge badge-matured">+${newCalls.toFixed(1)} calls</span>`;
+
+      tableHtml += `
+        <tr>
+          <td class="table-mono" style="font-weight: 700; color: #fff;">W${w}</td>
+          <td class="table-mono">${weeklyApps}</td>
+          <td class="table-mono">${weeklyTouch}</td>
+          <td class="table-mono">${priorApps + (weeklyApps * w)}</td>
+          <td>${statusBadge}</td>
+          <td class="table-mono" style="text-align: right; font-weight: 700; color: #fff;">${cumulativeCalls.toFixed(1)}</td>
+        </tr>
+      `;
+    }
+
+    timelineBody.innerHTML = tableHtml;
+
+    kpiInWindowCalls.textContent = callsAtWeek8.toFixed(1);
+
+    if (callsAtWeek8 >= 4.0) {
+      kpiStatusBadge.textContent = 'Goal Hit (≥4 calls)';
+      kpiStatusBadge.style.color = 'var(--emerald)';
+      kpiInWindowCalls.style.color = 'var(--emerald)';
+    } else {
+      kpiStatusBadge.textContent = `Short by ${(4.0 - callsAtWeek8).toFixed(1)} calls`;
+      kpiStatusBadge.style.color = 'var(--amber)';
+      kpiInWindowCalls.style.color = 'var(--amber)';
+    }
+
+    const fullTotalCalls = priorYield + (campaignApps * portalRate) + (totalTouches * touchRate);
+    kpiTotalCalls.textContent = fullTotalCalls.toFixed(1);
+
+    compCurrApps.textContent = totalSubmissions;
+    compCurrTouch.textContent = totalTouches;
+    compCurrLoad.textContent = dailyAppHours.toFixed(1) + ' hrs/day';
+    compCurrRate.textContent = fullTotalCalls.toFixed(1) + ' calls';
+    
+    if (callsAtWeek8 >= 4.0) {
+      compCurrW8.textContent = `${callsAtWeek8.toFixed(1)} (Goal Hit)`;
+      compCurrW8.style.color = 'var(--emerald)';
+    } else {
+      compCurrW8.textContent = `${callsAtWeek8.toFixed(1)} (Lag Delay)`;
+      compCurrW8.style.color = 'var(--amber)';
+    }
+  }
+
+  [sliderPrior, sliderApps, sliderTime, sliderTouch, sliderPortalRate, sliderTouchRate, sliderLag].forEach(slider => {
+    slider.addEventListener('input', calculate);
+  });
+
+  calculate();
+</script>
+
+</body>
+</html>
